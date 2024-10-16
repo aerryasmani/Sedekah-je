@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    # This is set to run at 12:00 AM GMT+8 (4:00 PM UTC)
+    - cron: "0 16 * * *"
   workflow_dispatch:
     inputs:
       test_suite:
@@ -23,9 +26,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
       - name: Install dependencies
@@ -34,7 +37,7 @@ jobs:
           pip install selenium pytest pytest-html pytest-xdist
       - name: Run tests
         run: |
-          if [ "${{ github.event.inputs.test_suite }}" = "all" ]; then
+          if [ "${{ github.event.inputs.test_suite }}" = "all" ] || [ "${{ github.event_name }}" = "schedule" ]; then
             pytest Test/System\ Testing/UI\ Test/*.py -n auto --html=report.html --self-contained-html
           elif [ "${{ github.event.inputs.test_suite }}" = "logo_and_header" ]; then
             pytest Test/System\ Testing/UI\ Test/S1_1_UI-LogoAndHeader.py -n auto --html=report.html --self-contained-html
@@ -46,12 +49,12 @@ jobs:
             pytest Test/System\ Testing/UI\ Test/S1_6_UI-Searchbar.py -n auto --html=report.html --self-contained-html
           fi
       - name: Upload test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-report
           path: report.html
       - name: Upload error screenshots
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: error-screenshots
