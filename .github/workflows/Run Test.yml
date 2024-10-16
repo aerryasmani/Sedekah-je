@@ -2,34 +2,57 @@ name: UI Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: "Test suite to run"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - logo_and_header
+          - buttons
+          - dropdown
+          - searchbar
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install selenium pytest pytest-html pytest-xdist
-    - name: Run tests
-      run: |
-        pytest Test/System\ Testing/UI\ Test/*.py -n auto --html=report.html --self-contained-html
-    - name: Upload test results
-      uses: actions/upload-artifact@v2
-      with:
-        name: test-report
-        path: report.html
-    - name: Upload error screenshots
-      uses: actions/upload-artifact@v2
-      if: failure()
-      with:
-        name: error-screenshots
-        path: error-screenshots/
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install selenium pytest pytest-html pytest-xdist
+      - name: Run tests
+        run: |
+          if [ "${{ github.event.inputs.test_suite }}" = "all" ]; then
+            pytest Test/System\ Testing/UI\ Test/*.py -n auto --html=report.html --self-contained-html
+          elif [ "${{ github.event.inputs.test_suite }}" = "logo_and_header" ]; then
+            pytest Test/System\ Testing/UI\ Test/S1_1_UI-LogoAndHeader.py -n auto --html=report.html --self-contained-html
+          elif [ "${{ github.event.inputs.test_suite }}" = "buttons" ]; then
+            pytest Test/System\ Testing/UI\ Test/S1_2_UI-Btn_Masjid.py Test/System\ Testing/UI\ Test/S1_3_UI-Btn_Surat.py Test/System\ Testing/UI\ Test/S1_4_UI-Btn_Lain.py -n auto --html=report.html --self-contained-html
+          elif [ "${{ github.event.inputs.test_suite }}" = "dropdown" ]; then
+            pytest Test/System\ Testing/UI\ Test/S1_5_UI-Dropdown_Negeri.py -n auto --html=report.html --self-contained-html
+          elif [ "${{ github.event.inputs.test_suite }}" = "searchbar" ]; then
+            pytest Test/System\ Testing/UI\ Test/S1_6_UI-Searchbar.py -n auto --html=report.html --self-contained-html
+          fi
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: report.html
+      - name: Upload error screenshots
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: error-screenshots
+          path: error-screenshots/
