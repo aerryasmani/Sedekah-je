@@ -6,7 +6,9 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    # This is set to run at 12:00 AM GMT+8 (4:00 PM UTC)
+    # This is set to run at 6 AM GMT+8 (10 PM UTC)
+    - cron: "0 22 * * *"
+    # This is set to run at 12 AM GMT+8 (4 PM UTC)
     - cron: "0 16 * * *"
   workflow_dispatch:
     inputs:
@@ -35,27 +37,23 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install selenium pytest pytest-html pytest-xdist
+      - name: Setup chromedriver
+        run: |
+          # Download and extract the correct version of chromedriver
+          DRIVER_VERSION=$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE)
+          curl -L https://chromedriver.storage.googleapis.com/$DRIVER_VERSION/chromedriver_linux64.zip -o chromedriver.zip
+          unzip chromedriver.zip
+          sudo mv chromedriver /usr/local/bin/
       - name: Run tests
         run: |
           if [ "${{ github.event.inputs.test_suite }}" = "all" ] || [ "${{ github.event_name }}" = "schedule" ]; then
-            pytest Test/System\ Testing/UI\ Test/*.py -n auto --html=report.html --self-contained-html
+            pytest Test/System\ Testing/UI\ Test/*.py -n auto
           elif [ "${{ github.event.inputs.test_suite }}" = "logo_and_header" ]; then
-            pytest Test/System\ Testing/UI\ Test/S1_1_UI-LogoAndHeader.py -n auto --html=report.html --self-contained-html
+            pytest Test/System\ Testing/UI\ Test/S1_1_UI-LogoAndHeader.py -n auto
           elif [ "${{ github.event.inputs.test_suite }}" = "buttons" ]; then
-            pytest Test/System\ Testing/UI\ Test/S1_2_UI-Btn_Masjid.py Test/System\ Testing/UI\ Test/S1_3_UI-Btn_Surat.py Test/System\ Testing/UI\ Test/S1_4_UI-Btn_Lain.py -n auto --html=report.html --self-contained-html
+            pytest Test/System\ Testing/UI\ Test/S1_2_UI-Btn_Masjid.py Test/System\ Testing/UI\ Test/S1_3_UI-Btn_Surat.py Test/System\ Testing/UI\ Test/S1_4_UI-Btn_Lain.py -n auto
           elif [ "${{ github.event.inputs.test_suite }}" = "dropdown" ]; then
-            pytest Test/System\ Testing/UI\ Test/S1_5_UI-Dropdown_Negeri.py -n auto --html=report.html --self-contained-html
+            pytest Test/System\ Testing/UI\ Test/S1_5_UI-Dropdown_Negeri.py -n auto
           elif [ "${{ github.event.inputs.test_suite }}" = "searchbar" ]; then
-            pytest Test/System\ Testing/UI\ Test/S1_6_UI-Searchbar.py -n auto --html=report.html --self-contained-html
+            pytest Test/System\ Testing/UI\ Test/S1_6_UI-Searchbar.py -n auto
           fi
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-report
-          path: report.html
-      - name: Upload error screenshots
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: error-screenshots
-          path: error-screenshots/
