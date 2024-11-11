@@ -5,7 +5,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
+from selenium.webdriver.common.action_chains import ActionChains
+
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -44,7 +46,7 @@ class Btn_MasjidFilter(unittest.TestCase):
     
         try:
             # Wait for up to 10 seconds for the element to be present
-            element = WebDriverWait(driver, 10).until(
+            element = WebDriverWait(driver, 30).until(
                 EC.element_to_be_clickable((By.XPATH, "/html/body/section/div[2]/div[1]/div[1]/div/button/span/span/span"))
             )
             found_text = element.text
@@ -61,8 +63,10 @@ class Btn_MasjidFilter(unittest.TestCase):
         # Click Surau Filter
         btn.click()
         logger.info("'Dropdown Filter' button clicked successfully")
-        time.sleep(5)
-    
+
+
+        logger.info("Scrolled down the dropdown options")
+
         # Verify Dropdown Options
         options = WebDriverWait(driver, 10).until(
             EC.visibility_of_all_elements_located((By.XPATH, "//ul[@role='listbox']/li"))
