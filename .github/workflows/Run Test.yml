@@ -1,4 +1,5 @@
 name: UI Tests
+
 on:
   push:
     branches: [main]
@@ -20,36 +21,20 @@ on:
           - buttons
           - dropdown
           - searchbar
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
-          
-      - name: Setup Chrome
-        uses: browser-actions/setup-chrome@latest
-        with:
-          chrome-version: stable
-          
-      - name: Setup ChromeDriver
-        uses: nanasess/setup-chromedriver@v2
-          
-      - name: Start ChromeDriver
-        run: |
-          export DISPLAY=:99
-          chromedriver --url-base=/wd/hub &
-          sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
-          
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install selenium pytest pytest-html pytest-xdist webdriver_manager
-          
+          pip install selenium pytest pytest-html pytest-xdist
       - name: Run tests
         run: |
           if [ "${{ github.event.inputs.test_suite }}" = "all" ] || [ "${{ github.event_name }}" = "schedule" ]; then
@@ -63,15 +48,11 @@ jobs:
           elif [ "${{ github.event.inputs.test_suite }}" = "searchbar" ]; then
             pytest Test/System\ Testing/UI\ Test/S1_6_UI-Searchbar.py -n auto --html=report.html --self-contained-html
           fi
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-          
       - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
           name: test-report
           path: report.html
-          
       - name: Upload error screenshots
         uses: actions/upload-artifact@v4
         if: failure()
