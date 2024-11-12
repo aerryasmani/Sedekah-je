@@ -39,10 +39,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install selenium pytest pytest-html pytest-xdist
       - name: Setup chromedriver
+        env:
+          CHROME_DRIVER_VERSION: ${{ env.CHROME_DRIVER_VERSION }}
         run: |
           # Download and extract the correct version of chromedriver
-          DRIVER_VERSION=$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE)
-          curl -L https://chromedriver.storage.googleapis.com/$DRIVER_VERSION/chromedriver_linux64.zip -o chromedriver.zip
+          CHROME_VERSION=$(google-chrome --version | cut -d ' ' -f 3 | cut -d '.' -f 1)
+          CHROME_DRIVER_VERSION=${CHROME_VERSION}.0
+          echo "Using Chrome Driver Version: $CHROME_DRIVER_VERSION"
+          curl -L https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip -o chromedriver.zip
           unzip chromedriver.zip
           sudo mv chromedriver /usr/local/bin/
       - name: Run tests
