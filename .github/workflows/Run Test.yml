@@ -1,5 +1,4 @@
 name: UI Tests
-
 on:
   push:
     branches: [main]
@@ -23,32 +22,49 @@ on:
           - buttons
           - dropdown
           - searchbar
-
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       # Checkout the repository
       - uses: actions/checkout@v4
+      
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
+      
+      - name: Install Chrome and ChromeDriver
+        run: |
+          # Install dependencies
+          sudo apt-get update
+          sudo apt-get install -y wget unzip google-chrome-stable
+          
+          # Get Chrome version
+          CHROME_VERSION=$(google-chrome --version | cut -d ' ' -f 3 | cut -d '.' -f 1)
+          
+          # Fetch the latest ChromeDriver version for the specific Chrome version
+          CHROMEDRIVER_VERSION=$(curl -sS https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION})
+          
+          # Download ChromeDriver
+          wget -N https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip -P ~/tmp
+          
+          # Unzip and make executable
+          unzip ~/tmp/chromedriver_linux64.zip -d ~/tmp
+          
+          # Move to path and set permissions
+          sudo mv -f ~/tmp/chromedriver /usr/local/bin/chromedriver
+          sudo chown root:root /usr/local/bin/chromedriver
+          sudo chmod 0755 /usr/local/bin/chromedriver
+          
+          # Verify installation
+          chromedriver --version
+      
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install selenium pytest pytest-html pytest-xdist
-      - name: Setup chromedriver
-        env:
-          CHROME_DRIVER_VERSION: ${{ env.CHROME_DRIVER_VERSION }}
-        run: |
-          # Download and extract the correct version of chromedriver
-          CHROME_VERSION=$(google-chrome --version | cut -d ' ' -f 3 | cut -d '.' -f 1)
-          CHROME_DRIVER_VERSION=${CHROME_VERSION}.0
-          echo "Using Chrome Driver Version: $CHROME_DRIVER_VERSION"
-          curl -L https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip -o chromedriver.zip
-          unzip chromedriver.zip
-          sudo mv chromedriver /usr/local/bin/
+      
       - name: Run tests
         run: |
           if [ "${{ github.event.inputs.test_suite }}" = "all" ] || [ "${{ github.event_name }}" = "schedule" ]; then
