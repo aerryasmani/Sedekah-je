@@ -1,0 +1,80 @@
+name: UI Tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # This is set to run at 6 AM GMT+8 (10 PM UTC)
+    - cron: "0 22 * * *"
+    # This is set to run at 12 AM GMT+8 (4 PM UTC)
+    - cron: "0 16 * * *"
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: "Test suite to run"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - logo_and_header
+          - buttons
+          - dropdown
+          - searchbar
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      
+      - name: Install Chrome and ChromeDriver
+        run: |
+          # Install dependencies
+          sudo apt-get update
+          sudo apt-get install -y wget unzip google-chrome-stable
+          
+          # Get Chrome version
+          CHROME_VERSION=$(google-chrome --version | cut -d ' ' -f 3 | cut -d '.' -f 1)
+          
+          # Fetch the latest ChromeDriver version for the specific Chrome version
+          CHROMEDRIVER_VERSION=$(curl -sS https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION})
+          
+          # Download ChromeDriver
+          wget -N https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip -P ~/tmp
+          
+          # Unzip and make executable
+          unzip ~/tmp/chromedriver_linux64.zip -d ~/tmp
+          
+          # Move to path and set permissions
+          sudo mv -f ~/tmp/chromedriver /usr/local/bin/chromedriver
+          sudo chown root:root /usr/local/bin/chromedriver
+          sudo chmod 0755 /usr/local/bin/chromedriver
+          
+          # Verify installation
+          chromedriver --version
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install selenium pytest pytest-html pytest-xdist
+      
+      - name: Run tests
+        run: |
+          if [ "${{ github.event.inputs.test_suite }}" = "all" ] || [ "${{ github.event_name }}" = "schedule" ]; then
+            pytest Test/System\ Testing/UI\ Test/*.py -n auto
+          elif [ "${{ github.event.inputs.test_suite }}" = "logo_and_header" ]; then
+            pytest Test/System\ Testing/UI\ Test/S1_1_UI-LogoAndHeader.py -n auto
+          elif [ "${{ github.event.inputs.test_suite }}" = "buttons" ]; then
+            pytest Test/System\ Testing/UI\ Test/S1_2_UI-Btn_Masjid.py Test/System\ Testing/UI\ Test/S1_3_UI-Btn_Surat.py Test/System\ Testing/UI\ Test/S1_4_UI-Btn_Lain.py -n auto
+          elif [ "${{ github.event.inputs.test_suite }}" = "dropdown" ]; then
+            pytest Test/System\ Testing/UI\ Test/S1_5_UI-Dropdown_Negeri.py -n auto
+          elif [ "${{ github.event.inputs.test_suite }}" = "searchbar" ]; then
+            pytest Test/System\ Testing/UI\ Test/S1_6_UI-Searchbar.py -n auto
+          fi
