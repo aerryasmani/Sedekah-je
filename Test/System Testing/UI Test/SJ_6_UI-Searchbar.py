@@ -16,7 +16,7 @@ class searchbar(unittest.TestCase):
         # Set up your WebDriver (in this case, Chrome)
         self.driver = webdriver.Chrome()
         self.driver.maximize_window()
-        self.driver.get("http://sedekahje.com")
+        self.driver.get("http://sedekah.je")
         logger.info("Browser opened and navigated to SedekahJe")
     
     def test_searchbar_is_present(self):

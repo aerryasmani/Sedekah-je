@@ -16,7 +16,7 @@ class Btn_lain(unittest.TestCase):
         # Set up your WebDriver (in this case, Chrome)
         self.driver = webdriver.Chrome()
         self.driver.maximize_window()
-        self.driver.get("http://sedekahje.com")
+        self.driver.get("http://sedekah.je")
         logger.info("Browser opened and navigated to SedekahJe")
     
     def test_btn_is_present(self):
@@ -47,7 +47,7 @@ class Btn_lain(unittest.TestCase):
     
         # Verify the badge (the "87" number)
         badge_text = btn.find_element(By.XPATH, ".//span[@class='rounded-full px-2 py-1 bg-slate-200 text-black']").text
-        expected_badge_text = "87"
+        expected_badge_text = "96"
         self.assertEqual(badge_text, expected_badge_text, "Button badge number is incorrect")
         logger.info("Button with icon, text, and badge is present and verified")
 
