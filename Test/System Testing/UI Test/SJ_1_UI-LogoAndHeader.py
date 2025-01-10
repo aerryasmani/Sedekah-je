@@ -16,7 +16,7 @@ class TestLogoAndHeader(unittest.TestCase):
         # Set up your WebDriver (in this case, Chrome)
         self.driver = webdriver.Chrome()
         self.driver.maximize_window()
-        self.driver.get("http://sedekahje.com")
+        self.driver.get("http://sedekah.je")
         logger.info("Browser opened and navigated to SedekahJe")
     
     def test_logo_is_present_and_correct(self):
@@ -29,7 +29,7 @@ class TestLogoAndHeader(unittest.TestCase):
         self.assertTrue(logo.is_displayed(), "Logo is not displayed")
         
         # Verify the logo src attribute
-        expected_src = "https://sedekahje.com/masjid.svg"  # Replace with actual logo URL
+        expected_src = "https://sedekah.je/masjid.svg"  # Replace with actual logo URL
         self.assertEqual(logo.get_attribute("src"), expected_src, "Logo source is incorrect")
         
         # Verify the logo dimensions (if needed)

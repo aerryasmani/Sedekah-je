@@ -28,7 +28,7 @@ class Btn_MasjidFilter(unittest.TestCase):
         try:
             # Wait for the button to be clickable
             popbtn = WebDriverWait(driver, 30).until(
-                EC.element_to_be_clickable((By.XPATH, '//*[@id="radix-:Rqkq:"]/div[3]/button'))
+                EC.element_to_be_clickable((By.XPATH, '//*[@id="radix-:Rikq:"]/div[3]/button'))
             )
             popbtn.click()
 
